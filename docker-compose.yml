@@ -8,8 +8,8 @@ volumes:
   gitlab_conf:
   gitlab_data:
   gitlab_logs:
-  build_runner_conf:
   build_runner_home:
+  build_runner_conf:
   test_runner_home:
   test_runner_conf:
   deploy_runner_home:
