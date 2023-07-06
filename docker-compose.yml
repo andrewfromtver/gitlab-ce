@@ -1,0 +1,97 @@
+version: "3.9"
+
+networks:
+  gitlab_ce:
+    driver: bridge
+
+volumes:
+  gitlab_conf:
+  gitlab_data:
+  gitlab_logs:
+  build_runner_conf:
+  build_runner_home:
+  test_runner_home:
+  test_runner_conf:
+  deploy_runner_home:
+  deploy_runner_conf:
+
+services:
+  # gitlab-ce
+  gitlab-ce:
+    image: gitlab/gitlab-ce:16.1.0-ce.0
+    shm_size: '2gb'
+    container_name: gitlab-ce
+    hostname: gitlab-ce.local
+    restart: always
+    depends_on:
+      - build-runner
+      - test-runner
+      - deploy-runner
+    volumes:
+      - gitlab_conf:/etc/gitlab
+      - gitlab_data:/var/opt/gitlab
+      - gitlab_logs:/var/log/gitlab
+    ports:
+      - "127.0.0.1:22:22"
+      - "127.0.0.1:80:80"
+    networks:
+      - gitlab_ce
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 8G
+
+  # gitlab-build-runner
+  build-runner:
+    build: ./
+    container_name: gitlab-build-runner
+    hostname: gitlab-build-runner.local
+    restart: always
+    volumes:
+      - build_runner_conf:/etc/gitlab-runner
+      - build_runner_home:/home/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    networks:
+      - gitlab_ce
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 4G
+
+  # gitlab-test-runner
+  test-runner:
+    build: ./
+    container_name: gitlab-test-runner
+    hostname: gitlab-test-runner.local
+    restart: always
+    volumes:
+      - test_runner_conf:/etc/gitlab-runner
+      - test_runner_home:/home/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    networks:
+      - gitlab_ce
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+
+  # gitlab-deploy-runner
+  deploy-runner:
+    build: ./
+    container_name: gitlab-deploy-runner
+    hostname: gitlab-deploy-runner.local
+    restart: always
+    volumes:
+      - deploy_runner_conf:/etc/gitlab-runner
+      - deploy_runner_home:/home/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    networks:
+      - gitlab_ce
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
