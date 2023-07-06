@@ -1,0 +1,78 @@
+stages:
+  - build
+  - test
+  - deploy
+
+build-code-job:
+  stage: build
+  tags:
+    - build
+    - docker
+  before_script:
+    - curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage?chat_id=$TELEGRAM_CHAT_ID&text=%20🛠%20%5B$CI_PROJECT_NAME%5D%20Build%20job%20started"
+  script:
+    - PATH=$PATH:/opt/sdk/gradle/6.5/bin
+    - mkdir -p ~/.android/ && touch ~/.android/repositories.cfg
+    - npm i
+    - npm run build
+    - doas docker build -t $CI_PROJECT_NAME .
+    - cordova create ${CI_PROJECT_NAME}
+    - cd ${CI_PROJECT_NAME}
+    - rm -Rf ./www/*
+    - cp -r ../www/* ./www/
+    - cp ../cordova/* ./
+    - cordova platform add android
+    - cordova plugin add cordova-plugin-splashscreen
+    - cordova build android
+  artifacts:
+    paths:
+      - ./${CI_PROJECT_NAME}/platforms/android
+    expire_in: 1 week
+    name: ${CI_PROJECT_NAME}_${CI_JOB_ID}_android
+  after_script:
+    - >
+      if [ $CI_JOB_STATUS == 'success' ]; then
+        curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage?chat_id=$TELEGRAM_CHAT_ID&text=%20✅%20%5B$CI_PROJECT_NAME%5D%20Build%20job%20completed"
+        curl -F document=@"./${CI_PROJECT_NAME}/platforms/android/app/build/outputs/apk/debug/app-debug.apk" https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendDocument?chat_id=$TELEGRAM_CHAT_ID
+      else
+        curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage?chat_id=$TELEGRAM_CHAT_ID&text=%20❌%20%5B$CI_PROJECT_NAME%5D%20Build%20job%20failed%20$CI_PIPELINE_URL"
+      fi
+
+test-code-job:
+  stage: test
+  tags:
+    - test
+    - docker
+  script:
+    - doas docker image ls | grep "$CI_PROJECT_NAME"
+    - semgrep scan --config auto --output $CI_PROJECT_NAME-sast-report.json --json
+  artifacts:
+    paths:
+      - $CI_PROJECT_NAME-sast-report.json
+    expire_in: 4 week
+    name: ${CI_PROJECT_NAME}_${CI_JOB_ID}_sast_report
+  after_script:
+    - >
+      if [ $CI_JOB_STATUS == 'success' ]; then
+        curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage?chat_id=$TELEGRAM_CHAT_ID&text=%20✅%20%5B$CI_PROJECT_NAME%5D%20All%20tests%20passed%20successfuly"
+        curl -F document=@"$CI_PROJECT_NAME-sast-report.json" https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendDocument?chat_id=$TELEGRAM_CHAT_ID
+      else
+        curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage?chat_id=$TELEGRAM_CHAT_ID&text=%20❌%20%5B$CI_PROJECT_NAME%5D%20Tests%20failed%20$CI_PIPELINE_URL"
+      fi
+
+deploy-code-job:
+  stage: deploy
+  tags:
+    - deploy
+    - docker
+  script:
+    - doas docker-compose -v
+    - doas docker stop $CI_PROJECT_NAME || true && doas docker rm $CI_PROJECT_NAME || true
+    - doas docker run -d --name $CI_PROJECT_NAME -p $HOST_PORT:80 --restart unless-stopped $CI_PROJECT_NAME
+  after_script:
+    - >
+      if [ $CI_JOB_STATUS == 'success' ]; then
+        curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage?chat_id=$TELEGRAM_CHAT_ID&text=%20🚀%20%5B$CI_PROJECT_NAME%5D%20Deploy%20job%20completed%20$PROJECT_URL"
+      else
+        curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage?chat_id=$TELEGRAM_CHAT_ID&text=%20❌%20%5B$CI_PROJECT_NAME%5D%20Deploy%20job%20failed%20$CI_PIPELINE_URL"
+      fi
