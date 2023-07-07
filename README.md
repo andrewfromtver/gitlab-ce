@@ -9,5 +9,5 @@
 - execute `./deploy.sh` script
 
 # Postinstall steps
-- change root password
+- change `root` password
 - enjoy
