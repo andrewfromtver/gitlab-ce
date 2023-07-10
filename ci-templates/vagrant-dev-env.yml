@@ -6,19 +6,7 @@ variables:
     GIT_CLONE_PATH: '$CI_BUILDS_DIR/$CI_PROJECT_NAME'
 
 stages:
-  - cache
   - deploy
-
-cache-job:
-  stage: cache
-  tags:
-    - vagrant
-  cache:
-    paths:
-      - .vagrant
-  script:
-    - mkdir -p .vagrant
-    - find .vagrant -type f -printf "%T@ %p\n" | sort -nr | cut -d\  -f2-
 
 deploy-job:
   stage: deploy
