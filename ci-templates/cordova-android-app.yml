@@ -22,7 +22,7 @@ build-code-job:
     - cp -r ../www/* ./www/
     - cp ../cordova/* ./
     - cordova platform add android
-    - cordova plugin add cordova-plugin-splashscreen
+    - cordova plugin add cordova-plugin-splashscreen cordova-plugin-vibration
     - cordova build android
   cache:
     paths:
@@ -36,7 +36,7 @@ build-code-job:
     - >
       if [ $CI_JOB_STATUS == 'success' ]; then
         curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage?chat_id=$TELEGRAM_CHAT_ID&text=%20✅%20%5B$CI_PROJECT_NAME%5D%20Build%20job%20completed"
-        curl -F document=@"./${CI_PROJECT_NAME}/platforms/android/app/build/outputs/apk/debug/app-debug.apk" https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendDocument?chat_id=$TELEGRAM_CHAT_ID
+        curl --retry-all-errors -F document=@"./${CI_PROJECT_NAME}/platforms/android/app/build/outputs/apk/debug/app-debug.apk" https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendDocument?chat_id=$TELEGRAM_CHAT_ID
       else
         curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage?chat_id=$TELEGRAM_CHAT_ID&text=%20❌%20%5B$CI_PROJECT_NAME%5D%20Build%20job%20failed%20$CI_PIPELINE_URL"
       fi
