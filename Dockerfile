@@ -1,4 +1,4 @@
-FROM gitlab/gitlab-runner:alpine3.18-v16.1.0
+FROM gitlab/gitlab-runner:alpine3.18-v16.6.1
 
 # set LANG env var
 ENV LANG=C.UTF-8
