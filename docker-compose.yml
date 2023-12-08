@@ -39,8 +39,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "4"
-          memory: 4G
+          cpus: "5"
+          memory: 6G
 
   # gitlab-build-runner
   build-runner:
@@ -57,7 +57,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "4"
+          cpus: "1"
           memory: 1G
 
   # gitlab-test-runner
@@ -76,7 +76,7 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 1G
+          memory: 0.5G
 
   # gitlab-deploy-runner
   deploy-runner:
@@ -94,4 +94,4 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: 1G
+          memory: 0.5G
