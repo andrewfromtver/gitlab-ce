@@ -40,7 +40,7 @@ services:
       resources:
         limits:
           cpus: "4"
-          memory: 8G
+          memory: 4G
 
   # gitlab-build-runner
   build-runner:
@@ -58,7 +58,7 @@ services:
       resources:
         limits:
           cpus: "4"
-          memory: 4G
+          memory: 1G
 
   # gitlab-test-runner
   test-runner:
