@@ -18,7 +18,7 @@ volumes:
 services:
   # gitlab-ce
   gitlab-ce:
-    image: gitlab/gitlab-ce:16.6.1-ce.0
+    image: gitlab/gitlab-ce:16.9.1-ce.0
     shm_size: '2gb'
     container_name: gitlab-ce
     hostname: gitlab-ce.local
@@ -34,6 +34,7 @@ services:
     ports:
       - "0.0.0.0:22:22"
       - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
     networks:
       - gitlab_ce
     deploy:
