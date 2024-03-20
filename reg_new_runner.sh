@@ -20,7 +20,7 @@ docker exec -it $RUNNER_CONTAINER_ID bash -c 'gitlab-runner register \
   --tag-list "docker,'$RUNNER_TAG'" \
   --run-untagged="true" \
   --locked="false" \
-  --access-level="not_protected" > /dev/null 2>&1; \
+  --access-level="not_protected" \
   echo "    network_mode = \"'$GITLAB_SUBNET'\"" >> /etc/gitlab-runner/config.toml'; 
 
 echo "Done"
