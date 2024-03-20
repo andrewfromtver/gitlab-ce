@@ -3,6 +3,7 @@
 RUNNER_CONTAINER_ID=$1
 RUNNER_TAG=$2
 GITLAB_RUNNER_REG_TOKEN=$3
+GITLAB_SERVER_HOST=$4
 
 GITLAB_SUBNET=$(docker network ls | grep gitlab_ce | cut -d " " -f 4)
 
@@ -12,7 +13,7 @@ docker exec -it $RUNNER_CONTAINER_ID bash -c 'gitlab-runner register \
   --non-interactive \
   --executor "shell" \
   --docker-image alpine:latest \
-  --url "http://gitlab-ce.local/" \
+  --url "'$GITLAB_SERVER_HOST'" \
   --registration-token "'$GITLAB_RUNNER_REG_TOKEN'" \
   --description "docker-'$RUNNER_TAG'-runner" \
   --maintenance-note "Docker runner for gitlab-ce" \

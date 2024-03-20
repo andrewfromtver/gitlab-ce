@@ -1,8 +1,8 @@
 #!/bin/sh
 
-clear
-
-echo "################### Build & deploy Gitlab-CE ###################"
+echo "################### Build & deploy Gitlab-CE ##################"
+docker compose down
+docker volume rm gitlab-ce_build_runner_conf gitlab-ce_deploy_runner_conf gitlab-ce_test_runner_conf 2>/dev/null
 docker compose -p gitlab-ce up -d --build --wait gitlab-ce
 echo "###############################################################"
 
@@ -29,9 +29,9 @@ echo "..."
 
 echo "################# Base runners registration ###################"
 echo "Registering  gitlab-build-runner ..."
-./reg_new_runner.sh gitlab-build-runner build $RUNNER_REG_TOKEN
+./reg_new_runner.sh gitlab-build-runner build $RUNNER_REG_TOKEN "gitlab.vm"
 echo "Registering  gitlab-test-runner ..."
-./reg_new_runner.sh gitlab-test-runner test $RUNNER_REG_TOKEN
+./reg_new_runner.sh gitlab-test-runner test $RUNNER_REG_TOKEN "gitlab.vm"
 echo "Registering  gitlab-deploy-runner ..."
-./reg_new_runner.sh gitlab-deploy-runner deploy $RUNNER_REG_TOKEN
+./reg_new_runner.sh gitlab-deploy-runner deploy $RUNNER_REG_TOKEN "gitlab.vm"
 echo "###############################################################"
